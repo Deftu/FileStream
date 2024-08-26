@@ -23,14 +23,29 @@ public enum Architecture {
     S390X(ProcessorType.X64, "s390x", createAliases("s390x", "s390")),
     SPARCV9(ProcessorType.X64, "sparcv9", createAliases("sparcv9", "sparc"));
 
-    public final ProcessorType processorType;
-    public final String name;
-    public final Set<String> aliases;
+    private final ProcessorType processorType;
+    private final String name;
+    private final Set<String> aliases;
 
     Architecture(ProcessorType processorType, String name, Set<String> aliases) {
         this.processorType = processorType;
         this.name = name;
         this.aliases = aliases;
+    }
+
+    @NotNull
+    public ProcessorType getProcessorType() {
+        return processorType;
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    @NotNull
+    public Set<String> getAliases() {
+        return aliases;
     }
 
     private static Set<String> createAliases(String... aliases) {
@@ -67,20 +82,25 @@ public enum Architecture {
     @NotNull
     public static Architecture find() {
         Architecture value = Architecture.UNKNOWN;
-        String raw = raw();
+        String name = raw();
+        int platformByteCount = name.contains("64") ? 8 : 4;
 
-        for (Architecture architecture : values()) {
-            if (architecture.name.equals(raw)) {
-                value = architecture;
-                break;
-            }
-        }
+        int maxAliasesSize = Arrays.stream(Architecture.values())
+                .mapToInt(it -> it.getAliases().size())
+                .max()
+                .orElse(0);
 
-        if (value == Architecture.UNKNOWN) {
-            for (Architecture architecture : values()) {
-                if (architecture.aliases.contains(raw)) {
-                    value = architecture;
-                    break;
+        for (int i = 0; i < maxAliasesSize; i++) {
+            for (Architecture arch : Architecture.values()) {
+                Set<String> aliases = arch.getAliases();
+                if (aliases.size() > i) {
+                    String alias = (String) aliases.toArray()[i];
+                    if (name.contains(alias)) {
+                        int byteCount = arch.getProcessorType().getBitSize() / 8;
+                        if (byteCount == platformByteCount) {
+                            value = arch;
+                        }
+                    }
                 }
             }
         }

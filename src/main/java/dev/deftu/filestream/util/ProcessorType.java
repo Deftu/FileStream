@@ -6,7 +6,7 @@ public enum ProcessorType {
     X86((byte) 32),
     X64((byte) 64);
 
-    public final byte bitSize;
+    private final byte bitSize;
 
     ProcessorType(byte bitSize) {
         this.bitSize = bitSize;
@@ -16,4 +16,7 @@ public enum ProcessorType {
         this((byte) -1);
     }
 
+    public byte getBitSize() {
+        return bitSize;
+    }
 }

@@ -13,6 +13,7 @@ public enum OperatingSystem {
     UNKNOWN("Unknown", "", "", createAliases("unknown")),
     WINDOWS("Windows", "", "dll", createAliases("windows", "win")),
     LINUX("Linux", "lib", "so", createAliases("linux", "nix", "nux"), () -> !isMusl() && !isAndroid()),
+    LINUX_MUSL("Linux-musl", "lib", "so", createAliases("linux", "nix", "nux"), () -> isMusl() && !isAndroid()),
     ANDROID("Android", "lib", "so", createAliases("android", "linux", "nix", "nux"), OperatingSystem::isAndroid),
     MACOS("macOS", "lib", "dylib", createAliases("mac", "darwin", "osx")),
     SOLARIS("Solaris", "lib", "so", createAliases("sunos", "solaris")),
@@ -25,8 +26,8 @@ public enum OperatingSystem {
     HAIKU("Haiku", "lib", "so", createAliases("haiku", "hrev")),
     ILLUMOS("Illumos", "lib", "so", createAliases("illumos", "omnios", "openindiana"));
 
-    public final String name, nativePrefix, nativeExtension;
-    public final Set<String> aliases;
+    private final String name, nativePrefix, nativeExtension;
+    private final Set<String> aliases;
     private final BooleanSupplier condition;
 
     OperatingSystem(String name, String nativePrefix, String nativeExtension, Set<String> aliases, BooleanSupplier condition) {
@@ -41,6 +42,31 @@ public enum OperatingSystem {
         this(name, nativePrefix, nativeExtension, aliases, () -> true);
     }
 
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    @NotNull
+    public String getNativePrefix() {
+        return nativePrefix;
+    }
+
+    @NotNull
+    public String getNativeExtension() {
+        return nativeExtension;
+    }
+
+    @NotNull
+    public Set<String> getAliases() {
+        return aliases;
+    }
+
+    @NotNull
+    public BooleanSupplier getCondition() {
+        return condition;
+    }
+
     public boolean isUnixLike() {
         return this == LINUX || this == ANDROID || this == MACOS || this == SOLARIS || this == FREE_BSD || this == NET_BSD || this == OPEN_BSD || this == DRAGONFLY_BSD || this == UNKNOWN_BSD || this == AIX || this == HAIKU || this == ILLUMOS;
     }
@@ -48,20 +74,25 @@ public enum OperatingSystem {
     @NotNull
     public static OperatingSystem find() {
         OperatingSystem value = OperatingSystem.UNKNOWN;
-        String name = System.getProperty("os.name").toLowerCase().replace(" ", "");
+        String name = System.getProperty("os.name")
+                .toLowerCase()
+                .replace(" ", "");
 
-        for (OperatingSystem os : values()) {
-            if (os.condition.getAsBoolean() && (os.name.toLowerCase().replace(" ", "").equals(name))) {
-                value = os;
-                break;
-            }
-        }
+        int maxAliases = Arrays.stream(values())
+                .mapToInt(os -> os.getAliases().size())
+                .max()
+                .orElse(0);
 
-        if (value == OperatingSystem.UNKNOWN) {
+        for (int i = 0; i < maxAliases; i++) {
             for (OperatingSystem os : values()) {
-                if (os.condition.getAsBoolean() && os.aliases.contains(name)) {
-                    value = os;
-                    break;
+                Set<String> aliases = os.getAliases();
+                if (aliases.size() > i) {
+                    String alias = (String) aliases.toArray()[i];
+                    if (name.contains(alias)) {
+                        if (os.getCondition().getAsBoolean()) {
+                            value = os;
+                        }
+                    }
                 }
             }
         }
