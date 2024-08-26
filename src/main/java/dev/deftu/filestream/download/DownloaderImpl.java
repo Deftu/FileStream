@@ -42,18 +42,18 @@ public class DownloaderImpl implements Downloader {
             logger.info("Starting download of {}", url);
 
             Path downloadStoreObject = downloadStore.getObject(url.toString());
-            logger.info("Download store object is {}", downloadStoreObject);
+            logger.trace("Download store object is {}", downloadStoreObject);
 
             boolean needsLinking = target != null;
 
             if (!isValid(downloadStoreObject, hashProvider)) {
-                logger.info("Invalid local object, downloading {} to {}", url, downloadStoreObject);
+                logger.trace("Invalid local object, downloading {} to {}", url, downloadStoreObject);
                 boolean success = downloadFile(url, downloadStoreObject, callback != null ? callback : DownloadCallback.NOOP);
-                logger.info("Finished downloading.");
+                logger.trace("Finished downloading.");
             }
 
             if (!needsLinking) {
-                logger.info("No linking required, returning {}", downloadStoreObject);
+                logger.trace("No linking required, returning {}", downloadStoreObject);
                 return downloadStoreObject;
             }
 
@@ -149,25 +149,25 @@ public class DownloaderImpl implements Downloader {
     }
 
     private boolean isValid(@NotNull Path target, @Nullable HashProvider hashProvider) {
-        logger.info("Checking if {} is valid", target);
+        logger.trace("Checking if {} is valid", target);
         if (!Files.exists(target)) {
-            logger.info("{} does not exist, invalid", target);
+            logger.trace("{} does not exist, invalid", target);
             return false;
         }
 
         if (hashProvider == null) {
-            logger.info("No hash provider, assuming invalid");
+            logger.trace("No hash provider, assuming invalid");
             return false;
         }
 
         String hash = hashProvider.getHash();
         Supplier<MessageDigest> hashingFunction = hashProvider.getHashingFunction();
         if (hash == null || hashingFunction == null) {
-            logger.info("No hash or hashing function, assuming invalid");
+            logger.trace("No hash or hashing function, assuming invalid");
             return false;
         }
 
-        logger.info("Hash provider for {} returned {}", target, hash);
+        logger.trace("Hash provider for {} returned {}", target, hash);
 
         String computedHash;
         try {
@@ -180,9 +180,9 @@ public class DownloaderImpl implements Downloader {
             );
         }
 
-        logger.info("Computed hash of {} is {}", target, computedHash);
+        logger.trace("Computed hash of {} is {}", target, computedHash);
         boolean valid = hash.equals(computedHash);
-        logger.info("Hash is {}valid", valid ? "" : "in");
+        logger.trace("Hash is {}valid", valid ? "" : "in");
         return valid;
     }
 

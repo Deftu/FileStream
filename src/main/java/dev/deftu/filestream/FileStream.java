@@ -1,6 +1,6 @@
 package dev.deftu.filestream;
 
-import dev.deftu.filestream.util.EnumOS;
+import dev.deftu.filestream.util.OperatingSystem;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -39,7 +39,7 @@ public class FileStream {
     private static Path findSystemLocalStorage() {
         Path storePath = null;
 
-        EnumOS os = EnumOS.fetchCurrent();
+        OperatingSystem os = OperatingSystem.find();
         switch (os) {
             case WINDOWS:
                 storePath = Paths.get(System.getenv("APPDATA"));
@@ -52,16 +52,18 @@ public class FileStream {
                 }
 
                 break;
-            case OSX:
+            case MACOS:
                 storePath = Paths.get(System.getProperty("user.home"), "Library",
                         "Application Support");
 
                 break;
-            case UNIX_LIKE:
-                String baseDir = System.getenv().getOrDefault(
-                        "XDG_DATA_HOME", System.getProperty("user.home") + File.separator +
-                                ".local" + File.separator + "share");
-                storePath = Paths.get(baseDir);
+            default:
+                if (os.isUnixLike()) {
+                    String baseDir = System.getenv().getOrDefault(
+                            "XDG_DATA_HOME", System.getProperty("user.home") + File.separator +
+                                    ".local" + File.separator + "share");
+                    storePath = Paths.get(baseDir);
+                }
 
                 break;
         }
