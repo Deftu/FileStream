@@ -39,7 +39,7 @@ public class DownloaderImpl implements Downloader {
     @Override
     public Download<URL> download(@NotNull URL url, @Nullable Path target, @Nullable HashProvider hashProvider, @Nullable DownloadCallback callback) {
         return new DownloadImpl(url, CompletableFuture.supplyAsync(() -> {
-            logger.info("Starting download of {}", url);
+            logger.trace("Starting download of {}", url);
 
             Path downloadStoreObject = downloadStore.getObject(url.toString());
             logger.trace("Download store object is {}", downloadStoreObject);
@@ -49,7 +49,7 @@ public class DownloaderImpl implements Downloader {
             if (!isValid(downloadStoreObject, hashProvider)) {
                 logger.trace("Invalid local object, downloading {} to {}", url, downloadStoreObject);
                 boolean success = downloadFile(url, downloadStoreObject, callback != null ? callback : DownloadCallback.NOOP);
-                logger.trace("Finished downloading.");
+                logger.trace("Download of {} to {} was {}", url, downloadStoreObject, success ? "successful" : "unsuccessful");
             }
 
             if (!needsLinking) {
