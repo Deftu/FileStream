@@ -1,4 +1,4 @@
-package cc.polyfrost.polyio.util;
+package dev.deftu.filestream.util;
 
 import java.util.Arrays;
 
@@ -10,6 +10,7 @@ import java.util.Arrays;
  * @since 0.0.9
  */
 public enum EnumOS {
+
     WINDOWS("windows", "win"),
     OSX("macos", "osx", "macintosh", "mac"),
     UNIX_LIKE("nix", "linux", "bsd", "aix", "solaris", "sunos", "gnu");
@@ -27,4 +28,5 @@ public enum EnumOS {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Unsupported platform: " + osName));
     }
+
 }

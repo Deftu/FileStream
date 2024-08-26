@@ -1,6 +1,6 @@
-package cc.polyfrost.polyio;
+package dev.deftu.filestream;
 
-import cc.polyfrost.polyio.util.EnumOS;
+import dev.deftu.filestream.util.EnumOS;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -12,25 +12,27 @@ import java.util.stream.Stream;
 /**
  * @author xtrm
  */
-public class PolyIO {
-    public static final String IMPLEMENTATION_NAME =
-            PolyIO.class.getPackage().getImplementationTitle();
-    public static final String IMPLEMENTATION_VERSION =
-            PolyIO.class.getPackage().getImplementationVersion();
+public class FileStream {
+
+    public static final String NAME = "@PROJECT_NAME@";
+    public static final String VERSION = "@PROJECT_VERSION@";
+
     public static final String USER_AGENT =
-            String.format("%s/%s", IMPLEMENTATION_NAME, IMPLEMENTATION_VERSION);
+            String.format("%s/%s", NAME, VERSION);
 
     public static final String GLOBAL_STORE_NAME =
             System.getProperty("polyio.globalStoreName", "Polyfrost");
+
     private static Path localStorage = null;
 
-    private PolyIO() {
+    private FileStream() {
     }
 
     public static Path getLocalStorage() {
         if (localStorage == null) {
             localStorage = findSystemLocalStorage();
         }
+
         return localStorage;
     }
 
@@ -48,16 +50,19 @@ public class PolyIO {
 //                                 although Local would've been more fit
                             "Roaming");
                 }
+
                 break;
             case OSX:
                 storePath = Paths.get(System.getProperty("user.home"), "Library",
                         "Application Support");
+
                 break;
             case UNIX_LIKE:
                 String baseDir = System.getenv().getOrDefault(
                         "XDG_DATA_HOME", System.getProperty("user.home") + File.separator +
                                 ".local" + File.separator + "share");
                 storePath = Paths.get(baseDir);
+
                 break;
         }
 
